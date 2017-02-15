@@ -1,0 +1,265 @@
+body {
+     background-color: lightblue;
+}
+
+h2 {
+	text-align: center;
+}
+
+select {
+	width: 60%;
+    margin-top: 2px;
+    height: 22px;
+	float: right;
+	clear: right;
+}
+
+label {
+	text-align: right;
+    float:left;
+    font-family: verdana;
+    font-size: 14px;
+    margin-top: 2px;
+    height: 20px;
+    clear: both;
+}
+
+label.account {
+    font-size: 18px;
+    height: 20px;
+    width: 200px;
+    margin-top: 10px;
+    margin-left: 10px;
+    text-align: right;
+    clear: both;
+    color: black;
+}
+
+input[type=text], input[type=password], input[type=email] {
+	width: 60%;
+    height: 22px;
+    margin-top: 2px;
+	float: right;
+    clear: none;
+}
+
+input.account {
+    height: 20px;
+    width: 300px;
+    border: 1px solid #000;
+    margin-top: 10px;
+    clear: none;
+    float: right;
+}
+
+input.accountsearch {
+    float: left;
+    width: 200px;
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+input.postmessage {
+    float: left;
+    margin-top: 5px;
+    margin-left: 10px;
+}
+
+.imgcontainer {
+	border-style: solid;
+	border-width: 1px;
+	float: left;
+	width: 340px;
+	height: 400px;
+}
+
+.container {
+	width: 250px;
+}
+
+form {
+	float: right;
+	width: 250px;
+	background-color: #f2f2f2;
+}
+
+form.login {
+    border-style: solid;
+	border-width: 1px;
+    height: 100px;
+    margin-bottom: 5px;
+}
+
+form.signup {
+    border-style: solid;
+	border-width: 1px;
+    height: 293px;
+}
+
+form.changepword {
+    float: left;
+    height: 180px;
+    width: 600px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+button {
+	float: right;
+	clear: right;
+	margin-top: 5px;
+}
+
+button.account {
+    clear: both;
+    float: right;
+}
+
+button.search {
+    margin-right: 330px;
+}
+
+button.post {
+    margin-right: 40px;
+}
+
+button.reload {
+    margin-right: 40px;
+    margin-bottom: 5px;
+}
+
+/*div {
+    padding-top: 100px;
+	margin: auto;
+	width: 600px;
+    height: 400px;
+}*/
+
+div.row {
+    color: #f2f2f2;
+    width: 100%;
+    margin-top: 10px;
+}
+
+div {
+    font-family: verdana;
+    background-color: #f2f2f2;
+}
+
+div.main {
+    background-color: lightblue;
+}
+
+div.welcomeview {
+    background-color: lightblue;
+}
+
+div.home {
+    clear: both;
+	display: none;
+    margin: auto;
+    width: 600px;
+    height: 300px;
+}
+
+div.browse {
+	display: none;
+    margin: auto;
+    width: 600px;
+    height: 50px;
+}
+
+div.account {
+    display: none;
+    margin: auto;
+    width: 600px;
+    height: 260px;
+}
+
+div.accountbuttons {
+    padding-top: 10px;
+    float: left;
+    width: 300px;
+}
+
+div.changepword {
+    float: left;
+    text-align: center;
+    color: #f2f2f2;
+    margin: auto;
+}
+
+div.topnav {
+    margin: auto;
+    width: 600px;
+}
+
+div.wall {
+    float: left;
+    max-width: 300px;
+    margin: 0;
+}
+
+div.userinfo {
+    margin-left: 330px;
+    overflow: hidden;
+}
+
+ul.topnav li a:hover {background-color: #555;}
+
+ul.topnav li {float: left;}
+
+ul.topnav li.icon {display: none;}
+
+ul.topnav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #f2f2f2;
+}
+
+ul.topnav li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+.welcomeview {
+    padding-top: 100px;
+	margin: auto;
+	width: 600px;
+    height: 400px;
+}
+
+.tab {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+h1 {
+    color: black;
+    text-align: center;
+    font-size: large;
+}
+
+p {
+	text-align: center;
+    font-family: verdana;
+    font-size: 20px;
+}
+
+p.error {
+	color: #ff3949;
+}
+
+p.success {
+	color: #2c8023;
+}
+
+
