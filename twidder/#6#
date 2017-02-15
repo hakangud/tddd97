@@ -1,0 +1,10 @@
+attachHandlers(): signoutbutton
+displayHome(): "post"
+searchForUser()
+loadWall()
+displayHomeScreenInBrowse()
+fillInUserInfo()
+changePassword()
+submitLoginForm()
+submitSignUpForm()
+

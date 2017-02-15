@@ -12,8 +12,8 @@ def sign_in():
     email = request.form['email']
     password = request.form['password']
     if dh.validate_password(email, password):
-        letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        token = "";
+        letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+        token = ""
         for i in range(36):
           token += letters[randint(0, len(letters)-1)]
           

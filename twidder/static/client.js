@@ -209,7 +209,21 @@ submitSignUpForm = function () {
 			country:form.country.value
 		};
 		
+        var params = "email"+form.email.value+"&"+
+                "password"+form.pword.value+"&"+
+                "firstname"+form.fname.value+"&"+
+                "familyname"+form.lname.value+"&"+
+                "gender"+form.g.options[g.selectedIndex].value+"&"+
+                "city"+form.city.value+"&"+
+                "country"+form.country.value+"&";
+        
 		var s = serverstub.signUp(f);
+        sendPOST("/signup", params, function () {
+            if (this.success) {
+
+            }
+        })
+
 		if (s.success) {
 			document.getElementById("successmessage").innerHTML = s.message;
 			form.reset();
@@ -239,6 +253,18 @@ validatePassword = function (form) {
     }
 	
 	return validatePasswordLength(form);
+};
+
+sendPOST = function (url, params, callback) {
+    var con = new XMLHttpRequest();
+    con.onreadystatechange = function () {
+        if (con.readyState == 4 && con.status == 200) {
+            callback.call(JSON.parse(con.responseText));
+        }
+    };
+    con.open("POST", url, true);
+    con.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    con.send(params);
 };
 
 window.onload = function () {
