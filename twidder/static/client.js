@@ -120,16 +120,29 @@ searchForUser = function (email) {
 
 loadWall = function (email) {
     document.getElementById("textarea").value = "";
+    var token = localStorage.getItem("token");
+    var params = "token="+token;
     var messages;
+
     if (email == null) {
-        messages = serverstub.getUserMessagesByToken(localStorage.getItem("token"));
+        sendPOST('/getusermessagesbytoken', params, function () {
+            if (this.success) {
+                messages = this.data;
+            }
+        });
     }
     else {
-        messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), email);
+        params += "&"+"email="+email;
+        sendPOST('/getusermessagesbyemail', params, function () {
+            if (this.success) {
+                messages = this.data;
+            }
+        });
     }
+
     var textarea = document.getElementById("textarea");
     for (var i = 0; i < messages.data.length; i++) {
-        textarea.value += messages.data[i].writer + ": " + messages.data[i].content + "\n";
+        textarea.value += messages.data[i].senderemail + ": " + messages.data[i].content + "\n";
     }
 };
 
