@@ -3,9 +3,15 @@ from random import randint
 from flask import request, Flask
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
+app.config.from_object(__name__)
 
 logged_in_users = {}
+
+@app.route('/')
+def index():
+    print "hEJEJJE"
+    return app.send_static_file('client.html')
 
 @app.route('/signin', methods=['POST'])
 def sign_in():

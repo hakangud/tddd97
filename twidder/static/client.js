@@ -196,41 +196,32 @@ submitLoginForm = function () {
 };
 
 submitSignUpForm = function () {
+    console.log("asd");
 	var form = document.getElementById("signup");
 	if (validatePassword(form)) {
 		var g = document.getElementById("gender");
-		var f = {
-			email:form.email.value,
-			password:form.pword.value,
-			firstname:form.fname.value,
-			familyname:form.lname.value,
-			gender:g.options[g.selectedIndex].value,
-			city:form.city.value,
-			country:form.country.value
-		};
 		
-        var params = "email"+form.email.value+"&"+
-                "password"+form.pword.value+"&"+
-                "firstname"+form.fname.value+"&"+
-                "familyname"+form.lname.value+"&"+
-                "gender"+form.g.options[g.selectedIndex].value+"&"+
-                "city"+form.city.value+"&"+
-                "country"+form.country.value+"&";
+        var params = "email="+form.email.value+"&"+
+                "password="+form.pword.value+"&"+
+                "firstname="+form.fname.value+"&"+
+                "familyname="+form.lname.value+"&"+
+                "gender="+g.options[g.selectedIndex].value+"&"+
+                "city="+form.city.value+"&"+
+                "country="+form.country.value+"&";
         
-		var s = serverstub.signUp(f);
-        sendPOST("/signup", params, function () {
+		//var s = serverstub.signUp(f);
+        sendPOST('/signup', params, function () {
+            console.log("ASDASDASD");
             if (this.success) {
-
+                document.getElementById("errormessage").innerHTML = "";
+                document.getElementById("successmessage").innerHTML = this.message;
+			    form.reset();
             }
-        })
-
-		if (s.success) {
-			document.getElementById("successmessage").innerHTML = s.message;
-			form.reset();
-		}
-		else {
-			document.getElementById("errormessage").innerHTML = s.message;
-		}
+            else {
+                document.getElementById("successmessage").innerHTML = "";
+			    document.getElementById("errormessage").innerHTML = this.message;
+		    }
+        });
 	}
 };
 
