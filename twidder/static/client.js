@@ -183,20 +183,36 @@ changePassword = function (form) {
 submitLoginForm = function () {
 	var form = document.getElementById("login");
 	if (validatePasswordLength(form)) {
-		var s = serverstub.signIn(form.email.value, form.pword.value);
-		if (s.success) {
+		//var s = serverstub.signIn(form.email.value, form.pword.value);
+
+        var params = "email="+form.email.value+"&"+
+                "password="+form.pword.value;
+
+        sendPOST('/signin', params, function () {
+            if (this.success) {
+                var token = this.data;
+                console.log(token);
+                localStorage.setItem("token", token);
+			    displayView();
+            }
+            else {
+                document.getElementById("errormessage").innerHTML = s.message;
+            }
+        });
+
+
+		/*if (s.success) {
 			var token = s.data;
 			localStorage.setItem("token", token);
 			displayView();
 		}
         else {
             document.getElementById("errormessage").innerHTML = s.message;
-        }
+        }*/
 	}
 };
 
 submitSignUpForm = function () {
-    console.log("asd");
 	var form = document.getElementById("signup");
 	if (validatePassword(form)) {
 		var g = document.getElementById("gender");
@@ -208,10 +224,8 @@ submitSignUpForm = function () {
                 "gender="+g.options[g.selectedIndex].value+"&"+
                 "city="+form.city.value+"&"+
                 "country="+form.country.value+"&";
-        
-		//var s = serverstub.signUp(f);
+
         sendPOST('/signup', params, function () {
-            console.log("ASDASDASD");
             if (this.success) {
                 document.getElementById("errormessage").innerHTML = "";
                 document.getElementById("successmessage").innerHTML = this.message;
