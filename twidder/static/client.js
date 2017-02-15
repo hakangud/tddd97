@@ -149,12 +149,25 @@ displayHomeScreenInBrowse = function (homeEmail) {
 
 fillInUserInfo = function (email) {
     var user;
+    var token = localStorage.getItem("token");
+    var params = "token="+token;
     if (email == null) {
-        user = serverstub.getUserDataByToken(localStorage.getItem("token"));
+        sendPOST('/getuserdatabytoken', params, function () {
+            if (this.success) {
+                user = this.data;
+            }
+        });
     }
     else {
         user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
+        params += "&"+"email="+email;
+        sendPOST('/getuserdatabyemail', params, function () {
+            if (this.success) {
+                user = this.data;
+            }
+        });
     }
+    
     document.getElementById("fname").innerHTML = user.data.firstname;
     document.getElementById("lname").innerHTML = user.data.familyname;
     document.getElementById("gender").innerHTML = user.data.gender;
@@ -165,9 +178,7 @@ fillInUserInfo = function (email) {
 
 changePassword = function (form) {
     if (validatePassword(form)) {
-		var token = localStorage.getItem("token");	
-		//var s = serverstub.changePassword(token, form.opword.value, form.pword.value);
-
+		var token = localStorage.getItem("token");
         var params = "token="+token+"&"+
                 "old_password="+form.opword.value+"&"+
                 "new_password="+form.pword.value;
@@ -184,18 +195,6 @@ changePassword = function (form) {
 		    	document.getElementById("errormessage").innerHTML = this.message;
 		    }
         });
-        /*
-		if (s.success) {	
-			form.reset();
-			document.getElementById("errormessage").innerHTML = "";
-			document.getElementById("successmessage").innerHTML = s.message;
-		}
-		else {
-			form.reset();
-			document.getElementById("successmessage").innerHTML = "";
-			document.getElementById("errormessage").innerHTML = s.message;
-		}
-		*/
     }
 };
 
