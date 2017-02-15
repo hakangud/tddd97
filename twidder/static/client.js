@@ -134,7 +134,16 @@ loadWall = function (email) {
 };
 
 displayHomeScreenInBrowse = function (homeEmail) {
-    var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), homeEmail);
+    var token = localStorage.getItem("token");
+    var params = "token="+token+"&"+
+            "email="+homeEmail;
+
+    sendPOST('/getuserdatabyemail', params, function () {
+        if (this.success) {
+            user = this.data;
+        }
+    });
+
     document.getElementById("fname").innerHTML = user.data.firstname;
     document.getElementById("lname").innerHTML = user.data.familyname;
     document.getElementById("gender").innerHTML = user.data.gender;
@@ -167,7 +176,7 @@ fillInUserInfo = function (email) {
             }
         });
     }
-    
+
     document.getElementById("fname").innerHTML = user.data.firstname;
     document.getElementById("lname").innerHTML = user.data.familyname;
     document.getElementById("gender").innerHTML = user.data.gender;

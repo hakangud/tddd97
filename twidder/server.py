@@ -10,7 +10,6 @@ logged_in_users = {}
 
 @app.route('/')
 def index():
-    print "hEJEJJE"
     return app.send_static_file('client.html')
 
 @app.route('/signin', methods=['POST'])
