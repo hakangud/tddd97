@@ -166,7 +166,25 @@ fillInUserInfo = function (email) {
 changePassword = function (form) {
     if (validatePassword(form)) {
 		var token = localStorage.getItem("token");	
-		var s = serverstub.changePassword(token, form.opword.value, form.pword.value)
+		//var s = serverstub.changePassword(token, form.opword.value, form.pword.value);
+
+        var params = "token="+token+"&"+
+                "old_password="+form.opword.value+"&"+
+                "new_password="+form.pword.value;
+
+        sendPOST('/changepassword', params, function () {
+            if (this.success) {
+                form.reset();
+			    document.getElementById("errormessage").innerHTML = "";
+		    	document.getElementById("successmessage").innerHTML = this.message;
+            }
+            else {
+		    	form.reset();
+		    	document.getElementById("successmessage").innerHTML = "";
+		    	document.getElementById("errormessage").innerHTML = this.message;
+		    }
+        });
+        /*
 		if (s.success) {	
 			form.reset();
 			document.getElementById("errormessage").innerHTML = "";
@@ -177,14 +195,13 @@ changePassword = function (form) {
 			document.getElementById("successmessage").innerHTML = "";
 			document.getElementById("errormessage").innerHTML = s.message;
 		}
+		*/
     }
 };
 
 submitLoginForm = function () {
 	var form = document.getElementById("login");
 	if (validatePasswordLength(form)) {
-		//var s = serverstub.signIn(form.email.value, form.pword.value);
-
         var params = "email="+form.email.value+"&"+
                 "password="+form.pword.value;
 
@@ -196,19 +213,9 @@ submitLoginForm = function () {
 			    displayView();
             }
             else {
-                document.getElementById("errormessage").innerHTML = s.message;
+                document.getElementById("errormessage").innerHTML = this.message;
             }
         });
-
-
-		/*if (s.success) {
-			var token = s.data;
-			localStorage.setItem("token", token);
-			displayView();
-		}
-        else {
-            document.getElementById("errormessage").innerHTML = s.message;
-        }*/
 	}
 };
 
