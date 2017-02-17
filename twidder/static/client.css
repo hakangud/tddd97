@@ -7,9 +7,9 @@ h2 {
 }
 
 select {
-	width: 60%;
+	width: 55%;
     margin-top: 2px;
-    height: 22px;
+    height: 20px;
 	float: right;
 	clear: right;
 }
@@ -18,9 +18,9 @@ label {
 	text-align: right;
     float:left;
     font-family: verdana;
-    font-size: 14px;
+    font-size: 12px;
     margin-top: 2px;
-    height: 20px;
+    height: 15px;
     clear: both;
 }
 
@@ -36,8 +36,8 @@ label.account {
 }
 
 input[type=text], input[type=password], input[type=email] {
-	width: 60%;
-    height: 22px;
+	width: 50%;
+    height: 12px;
     margin-top: 2px;
 	float: right;
     clear: none;
@@ -252,6 +252,10 @@ p {
 	text-align: center;
     font-family: verdana;
     font-size: 20px;
+}
+
+p.signup {
+    font-size: 16px;
 }
 
 p.error {
