@@ -85,14 +85,33 @@ displayHome = function (email) {
     document.getElementById("post").onclick = function () {
             var message = document.getElementById("postmessage").value;
             var token = localStorage.getItem("token");
+            var params = "token="+token;
             var postEmail;
             if (email == null) {
-                postEmail = serverstub.getUserDataByToken(token).email;
+                sendPOST('/getuserdatabytoken', params, function () {
+                     if (this.success) {
+                         postEmail = this.data.email;
+                     }
+                });
             }
             else {
                 postEmail = email;
             }
             serverstub.postMessage(token, message, postEmail);
+
+            params += "&"+"message="+message+"&"+
+                "email="+postEmail;
+
+            sendPOST('/postmessage', params, function () {
+                if (this.success) {
+                    document.getElementById("errormessage").innerHTML = "";
+                    document.getElementById("successmessage").innerHTML = this.message;
+                }
+                else {
+                    document.getElementById("errormessage").innerHTML = this.message;
+                    document.getElementById("successmessage").innerHTML = "";
+                }
+            });
             document.getElementById("postmessage").value = "";
         };
 };
@@ -140,9 +159,10 @@ loadWall = function (email) {
         });
     }
 
+
     var textarea = document.getElementById("textarea");
-    for (var i = 0; i < messages.data.length; i++) {
-        textarea.value += messages.data[i].senderemail + ": " + messages.data[i].content + "\n";
+    for (var i = 0; i < messages.length; i++) {
+        textarea.value += messages[i].senderemail + ": " + messages[i].content + "\n";
     }
 };
 
