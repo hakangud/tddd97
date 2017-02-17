@@ -4,7 +4,7 @@ from flask import g, Flask
 
 app = Flask(__name__)
 
-DATABASE = '/home/hakgu806/tddd97/venv/tddd97/database.db'
+DATABASE = '/home/hakgu806/tddd97/twidder/database.db'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -15,7 +15,7 @@ def get_db():
 @app.teardown_appcontext
 def close_connection(exeption):
     db = getattr(g, '_database', None)
-    if db is None:
+    if db is not None:
         db.close()
 
 def init_db():
