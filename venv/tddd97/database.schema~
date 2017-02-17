@@ -1,0 +1,18 @@
+drop table if exists users;
+drop table if exists messages;
+
+create table users (
+  email text primary key not null,
+  password text not null,
+  firstname text not null,
+  familyname text not null,
+  gender text not null,
+  city text not null,
+  country text not null
+);
+
+create table messages (
+  recieveremail text primary key not null,
+  senderemail text not null,
+  content text not null
+);
