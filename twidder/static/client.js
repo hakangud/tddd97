@@ -308,6 +308,18 @@ validatePassword = function (form) {
 	return validatePasswordLength(form);
 };
 
+sendGET = function (url, callback) {
+    var con = new XMLHttpRequest();
+    con.onreadystatechange = function () {
+	if (con.readyState == 4 && con.status == 200) {
+            callback.call(JSON.parse(con.responseText));
+        }
+    };
+    con.open("GET", url, true);
+    con.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    con.send();
+};
+
 sendPOST = function (url, params, callback) {
     var con = new XMLHttpRequest();
     con.onreadystatechange = function () {
