@@ -53,15 +53,14 @@ attachHandlers = function () {
         };
 
         document.getElementById("browsebutton").onclick = function () {
-            clearMessages();
             displayBrowse();
-            document.getElementById("account").style.display = "none";
-            document.getElementById("home").style.display = "none";
-            document.getElementById("browse").style.display = "block";
         };
 
         document.getElementById("accountbutton").onclick = function () {
             clearMessages();
+            document.getElementById("accountbutton").style.background = "#555";
+            document.getElementById("homebutton").style.background = "#f2f2f2";
+            document.getElementById("browsebutton").style.background = "#f2f2f2";
             document.getElementById("account").style.display = "block";
             document.getElementById("home").style.display = "none";
             document.getElementById("browse").style.display = "none";
@@ -73,32 +72,59 @@ attachHandlers = function () {
 
 displayHome = function (email) {
     clearMessages();
-    loadWall(email);
+    loadWall(email, "textarea");
     fillInUserInfo(email);
     document.getElementById("account").style.display = "none";
     document.getElementById("home").style.display = "block";
     document.getElementById("browse").style.display = "none";
+    document.getElementById("homebutton").style.background = "#555";
+    document.getElementById("accountbutton").style.background = "#f2f2f2";
+    document.getElementById("browsebutton").style.background = "#f2f2f2";
     document.getElementById("reload").onclick = function () {
-            loadWall(email);
+            loadWall(email, "textarea");
         };
 
     document.getElementById("post").onclick = function () {
-            var message = document.getElementById("postmessage").value;
-            var token = localStorage.getItem("token");
-            var postEmail;
-            if (email == null) {
-                postEmail = serverstub.getUserDataByToken(token).email;
-            }
-            else {
-                postEmail = email;
-            }
-            serverstub.postMessage(token, message, postEmail);
-            document.getElementById("postmessage").value = "";
-        };
+        postOnWall(email, "postmessage");
+        loadWall(email, "textarea");
+    };
+};
+
+postOnWall = function (email, messagebox) {
+    var message = document.getElementById(messagebox).value;
+    var token = localStorage.getItem("token");
+    var postEmail;
+    if (email == null) {
+        postEmail = serverstub.getUserDataByToken(token).email;
+    }
+    else {
+        postEmail = email;
+    }
+    serverstub.postMessage(token, message, postEmail);
+    document.getElementById(messagebox).value = "";
 };
 
 displayBrowse = function () {
-    document.getElementById("browse").innerHTML;
+    clearMessages();
+    var email = document.getElementById("bemail").textContent;
+    loadWall(email, "browsewall");
+    document.getElementById("browsebutton").style.background = "#555";
+    document.getElementById("accountbutton").style.background = "#f2f2f2";
+    document.getElementById("homebutton").style.background = "#f2f2f2";
+    document.getElementById("account").style.display = "none";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("browse").style.display = "block";
+
+    document.getElementById("browsereload").onclick = function () {
+        var email = document.getElementById("bemail").textContent;
+        loadWall(email, "browsetextarea");
+    };
+
+    document.getElementById("browsepost").onclick = function () {
+        var email = document.getElementById("bemail").textContent;
+        postOnWall(email, "browsepostmessage");
+        loadWall(email, "browsetextarea");
+    };
 };
 
 clearMessages = function () {
@@ -110,7 +136,7 @@ searchForUser = function (email) {
     var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
     if (user.success) {
         document.getElementById("errormessage").innerHTML = "";
-        displayHome(email);
+        displayUserInBrowse(email);
     }
     else {
         document.getElementById("successmessage").innerHTML = "";
@@ -118,8 +144,8 @@ searchForUser = function (email) {
     }
 };
 
-loadWall = function (email) {
-    document.getElementById("textarea").value = "";
+
+getMessages = function (email) {
     var messages;
     if (email == null) {
         messages = serverstub.getUserMessagesByToken(localStorage.getItem("token"));
@@ -127,24 +153,30 @@ loadWall = function (email) {
     else {
         messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), email);
     }
-    var textarea = document.getElementById("textarea");
-    for (var i = 0; i < messages.data.length; i++) {
-        textarea.value += messages.data[i].writer + ": " + messages.data[i].content + "\n";
+    return messages
+};
+
+loadWall = function (email, id) {
+    document.getElementById(id).value = "";
+
+    var messages = getMessages(email);
+    var textarea = document.getElementById(id);
+    if (messages.success) {
+        for (var i = 0; i < messages.data.length; i++) {
+            textarea.value += messages.data[i].writer + ": " + messages.data[i].content + "\n";
+        }
     }
 };
 
-displayHomeScreenInBrowse = function (homeEmail) {
+displayUserInBrowse = function (homeEmail) {
     var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), homeEmail);
-    document.getElementById("fname").innerHTML = user.data.firstname;
-    document.getElementById("lname").innerHTML = user.data.familyname;
-    document.getElementById("gender").innerHTML = user.data.gender;
-    document.getElementById("city").innerHTML = user.data.city;
-    document.getElementById("country").innerHTML = user.data.country;
-    document.getElementById("email").innerHTML = user.data.email;
-
-    var userHomeScreen = document.getElementById("home").innerHTML;
-
-    document.getElementById("homedisplay").innerHTML = userHomeScreen;
+    document.getElementById("bfname").innerHTML = user.data.firstname;
+    document.getElementById("blname").innerHTML = user.data.familyname;
+    document.getElementById("bgender").innerHTML = user.data.gender;
+    document.getElementById("bcity").innerHTML = user.data.city;
+    document.getElementById("bcountry").innerHTML = user.data.country;
+    document.getElementById("bemail").innerHTML = user.data.email;
+    loadWall(homeEmail, "browsetextarea");
 };
 
 fillInUserInfo = function (email) {
