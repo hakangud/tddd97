@@ -13,7 +13,7 @@ def sign_in():
     password = request.form['password']
     if dh.validate_password(email, password):
         letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        token = "";
+        token = ""
         for i in range(36):
           token += letters[randint(0, len(letters)-1)]
           
@@ -32,7 +32,7 @@ def sign_up():
     city = request.form['city']
     country = request.form['country']
     if not dh.validate_user(email):
-        dh.sign_up(email, password, firstname, familyname, gender, city, country)
+        dh.add_user(email, password, firstname, familyname, gender, city, country)
         return json.dumps({"success": True, "message": "Successfully created a new user"}) 
 
     return json.dumps({"success": False, "message": "User already exists"})
@@ -121,7 +121,7 @@ def post_message():
     if token in logged_in_users:
         sender_email = logged_in_users[token]
         if dh.validate_user(reciever_email):
-            dh.post_message(reciever_email, sender_email, message)
+            dh.add_message(reciever_email, sender_email, message)
             return json.dumps({"success": True, "message": "Message posted"})
         else:
             return json.dumps({"success": False, "message": "No such user"})

@@ -50,7 +50,7 @@ def get_user_messages(email):
     res = c.execute("SELECT * FROM messages WHERE recieveremail = ?", (email,))
     return res.fetchall()
 
-def sign_up(email, password, firstname, familyname, gender, city, country):
+def add_user(email, password, firstname, familyname, gender, city, country):
     c = get_db()
     c.execute("INSERT INTO users (email, password, firstname, familyname, gender, city, country) VALUES (?, ?, ?, ?, ?, ?, ?)", (email, password, firstname, familyname, gender, city, country))
     c.commit()
@@ -60,7 +60,7 @@ def update_password(email, new_password):
     c.execute("UPDATE users SET password = ? WHERE email = ?", (new_password, email))
     c.commit()
 
-def post_message(reciever_email, sender_email, message):
+def add_message(reciever_email, sender_email, message):
     c = get_db()
     c.execute("INSERT INTO messages (recieveremail, senderemail, content) VALUES (?, ?, ?)", (reciever_email, sender_email, message))
     c.commit()
