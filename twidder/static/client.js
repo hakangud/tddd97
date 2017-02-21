@@ -93,14 +93,30 @@ displayHome = function (email) {
 postOnWall = function (email, messagebox) {
     var message = document.getElementById(messagebox).value;
     var token = localStorage.getItem("token");
+    var params = "token="+token;
     var postEmail;
     if (email == null) {
-        postEmail = serverstub.getUserDataByToken(token).email;
+        sendGET('/getuserdatabytoken/'+token, function () {
+             if (this.success) {
+                 postEmail = this.data.email;
+             }
+        });
     }
     else {
         postEmail = email;
     }
-    serverstub.postMessage(token, message, postEmail);
+
+    params += "&"+"message="+message+"&"+ "email="+postEmail;
+    sendPOST('/postmessage', params, function () {
+        if (this.success) {
+            document.getElementById("errormessage").innerHTML = "";
+            document.getElementById("successmessage").innerHTML = this.message;
+        }
+        else {
+            document.getElementById("errormessage").innerHTML = this.message;
+            document.getElementById("successmessage").innerHTML = "";
+        }
+    });
     document.getElementById(messagebox).value = "";
 };
 
@@ -144,16 +160,24 @@ searchForUser = function (email) {
     }
 };
 
-
 getMessages = function (email) {
     var messages;
     if (email == null) {
-        messages = serverstub.getUserMessagesByToken(localStorage.getItem("token"));
+        sendGET('/getusermessagesbytoken/'+token, function () {
+            if (this.success) {
+                messages = this.data;
+            }
+        });
     }
     else {
-        messages = serverstub.getUserMessagesByEmail(localStorage.getItem("token"), email);
+        sendGET('/getusermessagesbyemail/'+token+'/'+email, function () {
+            if (this.success) {
+                messages = this.data;
+            }
+        });
     }
-    return messages
+
+    return messages;
 };
 
 loadWall = function (email, id) {
@@ -168,25 +192,42 @@ loadWall = function (email, id) {
     }
 };
 
-displayUserInBrowse = function (homeEmail) {
-    var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), homeEmail);
+displayUserInBrowse = function (email) {
+    var token = localStorage.getItem("token");
+    sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
+        if (this.success) {
+            user = this.data;
+        }
+    });
+
     document.getElementById("bfname").innerHTML = user.data.firstname;
     document.getElementById("blname").innerHTML = user.data.familyname;
     document.getElementById("bgender").innerHTML = user.data.gender;
     document.getElementById("bcity").innerHTML = user.data.city;
     document.getElementById("bcountry").innerHTML = user.data.country;
     document.getElementById("bemail").innerHTML = user.data.email;
-    loadWall(homeEmail, "browsetextarea");
+    loadWall(email, "browsetextarea");
 };
 
 fillInUserInfo = function (email) {
     var user;
+    var token = localStorage.getItem("token");
     if (email == null) {
-        user = serverstub.getUserDataByToken(localStorage.getItem("token"));
+        sendGET('/getuserdatabytoken/'+token, function () {
+            if (this.success) {
+                user = this.data;
+            }
+        });
     }
     else {
         user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
+        sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
+            if (this.success) {
+                user = this.data;
+            }
+        });
     }
+
     document.getElementById("fname").innerHTML = user.data.firstname;
     document.getElementById("lname").innerHTML = user.data.familyname;
     document.getElementById("gender").innerHTML = user.data.gender;
@@ -197,33 +238,43 @@ fillInUserInfo = function (email) {
 
 changePassword = function (form) {
     if (validatePassword(form)) {
-		var token = localStorage.getItem("token");	
-		var s = serverstub.changePassword(token, form.opword.value, form.pword.value)
-		if (s.success) {	
-			form.reset();
-			document.getElementById("errormessage").innerHTML = "";
-			document.getElementById("successmessage").innerHTML = s.message;
-		}
-		else {
-			form.reset();
-			document.getElementById("successmessage").innerHTML = "";
-			document.getElementById("errormessage").innerHTML = s.message;
-		}
+		var token = localStorage.getItem("token");
+        var params = "token="+token+"&"+
+                "old_password="+form.opword.value+"&"+
+                "new_password="+form.pword.value;
+
+        sendPOST('/changepassword', params, function () {
+            if (this.success) {
+                form.reset();
+			    document.getElementById("errormessage").innerHTML = "";
+		    	document.getElementById("successmessage").innerHTML = this.message;
+            }
+            else {
+		    	form.reset();
+		    	document.getElementById("successmessage").innerHTML = "";
+		    	document.getElementById("errormessage").innerHTML = this.message;
+		    }
+        });
     }
 };
 
 submitLoginForm = function () {
 	var form = document.getElementById("login");
 	if (validatePasswordLength(form)) {
-		var s = serverstub.signIn(form.email.value, form.pword.value);
-		if (s.success) {
-			var token = s.data;
-			localStorage.setItem("token", token);
-			displayView();
-		}
-        else {
-            document.getElementById("errormessage").innerHTML = s.message;
-        }
+        var params = "email="+form.email.value+"&"+
+                "password="+form.pword.value;
+
+        sendPOST('/signin', params, function () {
+            if (this.success) {
+                var token = this.data;
+                console.log(token);
+                localStorage.setItem("token", token);
+			    displayView();
+            }
+            else {
+                document.getElementById("errormessage").innerHTML = this.message;
+            }
+        });
 	}
 };
 
@@ -231,24 +282,26 @@ submitSignUpForm = function () {
 	var form = document.getElementById("signup");
 	if (validatePassword(form)) {
 		var g = document.getElementById("gender");
-		var f = {
-			email:form.email.value,
-			password:form.pword.value,
-			firstname:form.fname.value,
-			familyname:form.lname.value,
-			gender:g.options[g.selectedIndex].value,
-			city:form.city.value,
-			country:form.country.value
-		};
 		
-		var s = serverstub.signUp(f);
-		if (s.success) {
-			document.getElementById("successmessage").innerHTML = s.message;
-			form.reset();
-		}
-		else {
-			document.getElementById("errormessage").innerHTML = s.message;
-		}
+        var params = "email="+form.email.value+"&"+
+                "password="+form.pword.value+"&"+
+                "firstname="+form.fname.value+"&"+
+                "familyname="+form.lname.value+"&"+
+                "gender="+g.options[g.selectedIndex].value+"&"+
+                "city="+form.city.value+"&"+
+                "country="+form.country.value+"&";
+
+        sendPOST('/signup', params, function () {
+            if (this.success) {
+                document.getElementById("errormessage").innerHTML = "";
+                document.getElementById("successmessage").innerHTML = this.message;
+			    form.reset();
+            }
+            else {
+                document.getElementById("successmessage").innerHTML = "";
+			    document.getElementById("errormessage").innerHTML = this.message;
+		    }
+        });
 	}
 };
 
@@ -271,6 +324,30 @@ validatePassword = function (form) {
     }
 	
 	return validatePasswordLength(form);
+};
+
+sendGET = function (url, callback) {
+    var con = new XMLHttpRequest();
+    con.onreadystatechange = function () {
+	if (con.readyState == 4 && con.status == 200) {
+            callback.call(JSON.parse(con.responseText));
+        }
+    };
+    con.open("GET", url, true);
+    //con.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    con.send();
+};
+
+sendPOST = function (url, params, callback) {
+    var con = new XMLHttpRequest();
+    con.onreadystatechange = function () {
+        if (con.readyState == 4 && con.status == 200) {
+            callback.call(JSON.parse(con.responseText));
+        }
+    };
+    con.open("POST", url, true);
+    con.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    con.send(params);
 };
 
 window.onload = function () {
