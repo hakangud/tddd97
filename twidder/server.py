@@ -31,7 +31,7 @@ def sign_up():
     gender = request.form['gender']
     city = request.form['city']
     country = request.form['country']
-    if dh.validate_user(email) == False:
+    if not dh.validate_user(email):
         dh.sign_up(email, password, firstname, familyname, gender, city, country)
         return json.dumps({"success": True, "message": "Successfully created a new user"}) 
 
@@ -42,7 +42,6 @@ def sign_out():
     token = request.form['token']
     if token in logged_in_users:
         del logged_in_users[token]
-        sign_out(token)
         return json.dumps({"success": True, "message": "Successfully signed out"})
     
     return json.dumps({"success": False, "message": "You are not signed in"})
@@ -62,20 +61,17 @@ def change_password():
 
     return json.dumps({"success": False, "message": "You are not signed in"})
 
-@app.route('/getuserdatabytoken', methods=['POST'])
-def get_user_data_by_token():
-    token = request.form['token']
+@app.route('/getuserdatabytoken/<token>', methods=['GET'])
+def get_user_data_by_token(token):
     if token in logged_in_users:
         email = logged_in_users[token]
         return get_user_data(email)
 
     return json.dumps({"success": False, "message": "You are not signed in"})
 
-@app.route('/getuserdatabyemail', methods=['POST'])
-def get_user_data_by_email():
-    token = request.form['token']
+@app.route('/getuserdatabyemail/<token>/<email>', methods=['GET'])
+def get_user_data_by_email(token, email):
     if token in logged_in_users:
-        email = request.form['email']
         return get_user_data(email)
 
     return json.dumps({"success": False, "message": "You are not signed in"})
@@ -95,20 +91,17 @@ def get_user_data(email):
 
     return json.dumps({"success": False, "message": "No such user"})
 
-@app.route('/getusermessagesbytoken', methods=['POST'])
-def get_user_messages_by_token():
-    token = request.form['token']
+@app.route('/getusermessagesbytoken/<token>', methods=['GET'])
+def get_user_messages_by_token(token):
     if token in logged_in_users:
         email = logged_in_users[token]
         return get_user_messages(email)
         
     return json.dumps({"success": False, "message": "You are not signed in"})
 
-@app.route('/getusermessagesbyemail', methods=['POST'])
-def get_user_messages_by_email():
-    token = request.form['token']
+@app.route('/getusermessagesbyemail/<token>/<email>', methods=['GET'])
+def get_user_messages_by_email(token, email):
     if token in logged_in_users:
-        email = request.form['email']
         return get_user_messages(email)
 
     return json.dumps({"success": False, "message": "You are not signed in"})
