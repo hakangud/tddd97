@@ -38,8 +38,10 @@ attachHandlers = function () {
 
         document.getElementById("signoutbutton").onclick = function () {
             var token = localStorage.getItem("token");
+
             localStorage.removeItem("token");
             serverstub.signOut(token);
+            sendPOST('/signout',)
             displayView();
         };
 
@@ -93,6 +95,7 @@ displayHome = function (email) {
 postOnWall = function (email, messagebox) {
     var message = document.getElementById(messagebox).value;
     var token = localStorage.getItem("token");
+    console.log(token);
     var params = "token="+token;
     var postEmail;
     if (email == null) {
@@ -150,6 +153,10 @@ clearMessages = function () {
 
 searchForUser = function (email) {
     var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
+
+    var token = localStorage.getItem("token");
+    sendGET('/getuserdatabyemail/'+token)
+
     if (user.success) {
         document.getElementById("errormessage").innerHTML = "";
         displayUserInBrowse(email);
@@ -162,30 +169,32 @@ searchForUser = function (email) {
 
 getMessages = function (email) {
     var messages;
+    var token = localStorage.getItem("token");
     if (email == null) {
         sendGET('/getusermessagesbytoken/'+token, function () {
             if (this.success) {
-                messages = this.data;
+                messages = this;
+                console.log(messages);
             }
         });
     }
     else {
         sendGET('/getusermessagesbyemail/'+token+'/'+email, function () {
             if (this.success) {
-                messages = this.data;
+                messages = this;
+                console.log(messages);
             }
         });
     }
 
-    return messages;
+    return null;
 };
 
 loadWall = function (email, id) {
     document.getElementById(id).value = "";
-
     var messages = getMessages(email);
     var textarea = document.getElementById(id);
-    if (messages.success) {
+    if (messages != null && messages.success) {
         for (var i = 0; i < messages.data.length; i++) {
             textarea.value += messages.data[i].writer + ": " + messages.data[i].content + "\n";
         }
@@ -196,44 +205,47 @@ displayUserInBrowse = function (email) {
     var token = localStorage.getItem("token");
     sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
         if (this.success) {
-            user = this.data;
+            user = this;
+            document.getElementById("bfname").innerHTML = user.data.firstname;
+            document.getElementById("blname").innerHTML = user.data.familyname;
+            document.getElementById("bgender").innerHTML = user.data.gender;
+            document.getElementById("bcity").innerHTML = user.data.city;
+            document.getElementById("bcountry").innerHTML = user.data.country;
+            document.getElementById("bemail").innerHTML = user.data.email;
+            loadWall(email, "browsetextarea");
         }
     });
-
-    document.getElementById("bfname").innerHTML = user.data.firstname;
-    document.getElementById("blname").innerHTML = user.data.familyname;
-    document.getElementById("bgender").innerHTML = user.data.gender;
-    document.getElementById("bcity").innerHTML = user.data.city;
-    document.getElementById("bcountry").innerHTML = user.data.country;
-    document.getElementById("bemail").innerHTML = user.data.email;
-    loadWall(email, "browsetextarea");
 };
 
 fillInUserInfo = function (email) {
-    var user;
+    var user = null;
     var token = localStorage.getItem("token");
     if (email == null) {
         sendGET('/getuserdatabytoken/'+token, function () {
             if (this.success) {
-                user = this.data;
+                user = this;
+                document.getElementById("fname").innerHTML = user.data.firstname;
+                document.getElementById("lname").innerHTML = user.data.familyname;
+                document.getElementById("gender").innerHTML = user.data.gender;
+                document.getElementById("city").innerHTML = user.data.city;
+                document.getElementById("country").innerHTML = user.data.country;
+                document.getElementById("email").innerHTML = user.data.email;
             }
         });
     }
     else {
-        user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
         sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
             if (this.success) {
-                user = this.data;
+                user = this;
+                document.getElementById("fname").innerHTML = user.data.firstname;
+                document.getElementById("lname").innerHTML = user.data.familyname;
+                document.getElementById("gender").innerHTML = user.data.gender;
+                document.getElementById("city").innerHTML = user.data.city;
+                document.getElementById("country").innerHTML = user.data.country;
+                document.getElementById("email").innerHTML = user.data.email;
             }
         });
     }
-
-    document.getElementById("fname").innerHTML = user.data.firstname;
-    document.getElementById("lname").innerHTML = user.data.familyname;
-    document.getElementById("gender").innerHTML = user.data.gender;
-    document.getElementById("city").innerHTML = user.data.city;
-    document.getElementById("country").innerHTML = user.data.country;
-    document.getElementById("email").innerHTML = user.data.email;
 };
 
 changePassword = function (form) {
@@ -267,7 +279,6 @@ submitLoginForm = function () {
         sendPOST('/signin', params, function () {
             if (this.success) {
                 var token = this.data;
-                console.log(token);
                 localStorage.setItem("token", token);
 			    displayView();
             }
@@ -334,8 +345,7 @@ sendGET = function (url, callback) {
         }
     };
     con.open("GET", url, true);
-    //con.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    con.send();
+    con.send(null);
 };
 
 sendPOST = function (url, params, callback) {

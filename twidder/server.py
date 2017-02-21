@@ -3,16 +3,20 @@ from random import randint
 from flask import request, Flask
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 
 logged_in_users = {}
+
+@app.route('/')
+def index():
+    return app.send_static_file('client.html')
 
 @app.route('/signin', methods=['POST'])
 def sign_in():
     email = request.form['email']
     password = request.form['password']
     if dh.validate_password(email, password):
-        letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
         token = ""
         for i in range(36):
           token += letters[randint(0, len(letters)-1)]
