@@ -122,8 +122,13 @@ def post_message():
     token = request.form['token']
     message = request.form['message']
     reciever_email = request.form['email']
+    print token
+    print message
+    print reciever_email
+    print "HEJEHEJ"
     if token in logged_in_users:
         sender_email = logged_in_users[token]
+        print sender_email
         if dh.validate_user(reciever_email):
             dh.add_message(reciever_email, sender_email, message)
             return json.dumps({"success": True, "message": "Message posted"})

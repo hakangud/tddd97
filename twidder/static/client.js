@@ -38,16 +38,27 @@ attachHandlers = function () {
 
         document.getElementById("signoutbutton").onclick = function () {
             var token = localStorage.getItem("token");
-
+            var params = "token="+token;
             localStorage.removeItem("token");
-            serverstub.signOut(token);
-            sendPOST('/signout',)
+            localStorage.removeItem("my_email");
+            sendPOST('/signout', params, function () {
+                if (this.success) {
+                    document.getElementById("errormessage").innerHTML = "";
+                    document.getElementById("successmessage").innerHTML = this.message;
+                }
+                else {
+                    document.getElementById("errormessage").innerHTML = this.message;
+                    document.getElementById("successmessage").innerHTML = "";
+                }
+            });
             displayView();
         };
 
         document.getElementById("search").onclick = function () {
             var email = document.getElementById("accountsearch").value;
-            searchForUser(email);
+            if (email != null && email != "") {
+                searchForUser(email);
+            }
         };
 
         document.getElementById("homebutton").onclick = function () {
@@ -59,7 +70,7 @@ attachHandlers = function () {
         };
 
         document.getElementById("accountbutton").onclick = function () {
-            clearMessages();
+            clearErrorMessages();
             document.getElementById("accountbutton").style.background = "#555";
             document.getElementById("homebutton").style.background = "#f2f2f2";
             document.getElementById("browsebutton").style.background = "#f2f2f2";
@@ -68,48 +79,71 @@ attachHandlers = function () {
             document.getElementById("browse").style.display = "none";
         };
 
+        document.getElementById("browsereload").onclick = function () {
+            var email = document.getElementById("bemail").textContent;
+            if (email != null) {
+                getMessages(email);
+            }
+        };
+
+        document.getElementById("browsepost").onclick = function () {
+            var email = document.getElementById("bemail").textContent;
+            if (email != null) {
+                postOnWall(email, "browsepostmessage");
+                getMessages(email);
+            }
+        };
+
+        document.getElementById("reload").onclick = function () {
+            getMessages(null);
+        };
+
+        document.getElementById("post").onclick = function () {
+            postOnWall(null, "postmessage");
+            getMessages(null);
+        };
         displayHome();
     }
 };
 
-displayHome = function (email) {
-    clearMessages();
-    loadWall(email, "textarea");
-    fillInUserInfo(email);
+displayHome = function () {
+    clearErrorMessages();
+    getMessages(null);
+    fillInUserInfo(null);
     document.getElementById("account").style.display = "none";
     document.getElementById("home").style.display = "block";
     document.getElementById("browse").style.display = "none";
     document.getElementById("homebutton").style.background = "#555";
     document.getElementById("accountbutton").style.background = "#f2f2f2";
     document.getElementById("browsebutton").style.background = "#f2f2f2";
-    document.getElementById("reload").onclick = function () {
-            loadWall(email, "textarea");
-        };
+};
 
-    document.getElementById("post").onclick = function () {
-        postOnWall(email, "postmessage");
-        loadWall(email, "textarea");
-    };
+displayBrowse = function () {
+    clearErrorMessages();
+    document.getElementById("browsebutton").style.background = "#555";
+    document.getElementById("accountbutton").style.background = "#f2f2f2";
+    document.getElementById("homebutton").style.background = "#f2f2f2";
+    document.getElementById("account").style.display = "none";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("browse").style.display = "block";
+    if (document.getElementById("bemail").textContent) {
+        var email = document.getElementById("bemail").textContent;
+        getMessages(email);
+    }
 };
 
 postOnWall = function (email, messagebox) {
     var message = document.getElementById(messagebox).value;
     var token = localStorage.getItem("token");
-    console.log(token);
-    var params = "token="+token;
     var postEmail;
     if (email == null) {
-        sendGET('/getuserdatabytoken/'+token, function () {
-             if (this.success) {
-                 postEmail = this.data.email;
-             }
-        });
+        postEmail = localStorage.getItem("my_email");
     }
     else {
         postEmail = email;
     }
 
-    params += "&"+"message="+message+"&"+ "email="+postEmail;
+    var params = "token="+token+"&"+"message="+message+"&"+"email="+postEmail;
     sendPOST('/postmessage', params, function () {
         if (this.success) {
             document.getElementById("errormessage").innerHTML = "";
@@ -123,47 +157,26 @@ postOnWall = function (email, messagebox) {
     document.getElementById(messagebox).value = "";
 };
 
-displayBrowse = function () {
-    clearMessages();
-    var email = document.getElementById("bemail").textContent;
-    loadWall(email, "browsewall");
-    document.getElementById("browsebutton").style.background = "#555";
-    document.getElementById("accountbutton").style.background = "#f2f2f2";
-    document.getElementById("homebutton").style.background = "#f2f2f2";
-    document.getElementById("account").style.display = "none";
-    document.getElementById("home").style.display = "none";
-    document.getElementById("browse").style.display = "block";
-
-    document.getElementById("browsereload").onclick = function () {
-        var email = document.getElementById("bemail").textContent;
-        loadWall(email, "browsetextarea");
-    };
-
-    document.getElementById("browsepost").onclick = function () {
-        var email = document.getElementById("bemail").textContent;
-        postOnWall(email, "browsepostmessage");
-        loadWall(email, "browsetextarea");
-    };
-};
-
-clearMessages = function () {
+clearErrorMessages = function () {
     document.getElementById("successmessage").innerHTML = "";
     document.getElementById("errormessage").innerHTML = "";
 };
 
 searchForUser = function (email) {
-    var user = serverstub.getUserDataByEmail(localStorage.getItem("token"), email);
-
     var token = localStorage.getItem("token");
-    sendGET('/getuserdatabyemail/'+token)
-
-    if (user.success) {
-        document.getElementById("errormessage").innerHTML = "";
-        displayUserInBrowse(email);
-    }
-    else {
-        document.getElementById("successmessage").innerHTML = "";
-        document.getElementById("errormessage").innerHTML = user.message;
+    if (email != null) {
+        sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
+            if (this.success) {
+                document.getElementById("errormessage").innerHTML = "";
+                document.getElementById("successmessage").innerHTML = this.message;
+                document.getElementById("accountsearch").value = "";
+                fillInUserInfo(email);
+            }
+            else {
+                document.getElementById("successmessage").innerHTML = "";
+                document.getElementById("errormessage").innerHTML = this.message;
+            }
+        });
     }
 };
 
@@ -173,48 +186,35 @@ getMessages = function (email) {
     if (email == null) {
         sendGET('/getusermessagesbytoken/'+token, function () {
             if (this.success) {
-                messages = this;
-                console.log(messages);
+                messages = this.data;
+                document.getElementById("textarea").value = "";
+                var textarea = document.getElementById("textarea");
+                if (messages != null) {
+                    var i = messages.length-1;
+                    while (i != -1) {
+                        textarea.value += messages[i][2] + ": " + messages[i][3] + "\n";
+                        i--;
+                    }
+                }
             }
         });
     }
     else {
         sendGET('/getusermessagesbyemail/'+token+'/'+email, function () {
             if (this.success) {
-                messages = this;
-                console.log(messages);
+                messages = this.data;
+                document.getElementById("browsetextarea").value = "";
+                var textarea = document.getElementById("browsetextarea");
+                if (messages != null) {
+                    var i = messages.length-1;
+                    while (i != -1) {
+                        textarea.value += messages[i][2] + ": " + messages[i][3] + "\n";
+                        i--;
+                    }
+                }
             }
         });
     }
-
-    return null;
-};
-
-loadWall = function (email, id) {
-    document.getElementById(id).value = "";
-    var messages = getMessages(email);
-    var textarea = document.getElementById(id);
-    if (messages != null && messages.success) {
-        for (var i = 0; i < messages.data.length; i++) {
-            textarea.value += messages.data[i].writer + ": " + messages.data[i].content + "\n";
-        }
-    }
-};
-
-displayUserInBrowse = function (email) {
-    var token = localStorage.getItem("token");
-    sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
-        if (this.success) {
-            user = this;
-            document.getElementById("bfname").innerHTML = user.data.firstname;
-            document.getElementById("blname").innerHTML = user.data.familyname;
-            document.getElementById("bgender").innerHTML = user.data.gender;
-            document.getElementById("bcity").innerHTML = user.data.city;
-            document.getElementById("bcountry").innerHTML = user.data.country;
-            document.getElementById("bemail").innerHTML = user.data.email;
-            loadWall(email, "browsetextarea");
-        }
-    });
 };
 
 fillInUserInfo = function (email) {
@@ -237,12 +237,12 @@ fillInUserInfo = function (email) {
         sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
             if (this.success) {
                 user = this;
-                document.getElementById("fname").innerHTML = user.data.firstname;
-                document.getElementById("lname").innerHTML = user.data.familyname;
-                document.getElementById("gender").innerHTML = user.data.gender;
-                document.getElementById("city").innerHTML = user.data.city;
-                document.getElementById("country").innerHTML = user.data.country;
-                document.getElementById("email").innerHTML = user.data.email;
+                document.getElementById("bfname").innerHTML = user.data.firstname;
+                document.getElementById("blname").innerHTML = user.data.familyname;
+                document.getElementById("bgender").innerHTML = user.data.gender;
+                document.getElementById("bcity").innerHTML = user.data.city;
+                document.getElementById("bcountry").innerHTML = user.data.country;
+                document.getElementById("bemail").innerHTML = user.data.email;
             }
         });
     }
@@ -280,7 +280,9 @@ submitLoginForm = function () {
             if (this.success) {
                 var token = this.data;
                 localStorage.setItem("token", token);
+                localStorage.setItem("my_email", form.email.value);
 			    displayView();
+                displayHome();
             }
             else {
                 document.getElementById("errormessage").innerHTML = this.message;
