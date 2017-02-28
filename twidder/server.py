@@ -1,28 +1,51 @@
 import database_helper as dh
+#from twidder import app
+#from gevent import pywsgi
+from gevent.pywsgi import WSGIServer
+from geventwebsocket.handler import WebSocketHandler
 from random import randint
 from flask import request, Flask
 import json
 
 app = Flask(__name__, static_url_path='/static')
-
+app.debug = True
 logged_in_users = {}
+websockets  = {}
 
 @app.route('/')
 def index():
     return app.send_static_file('client.html')
 
+@app.route('/api')
+def api():
+    if request.environ.get('wsgi.websocket'):
+        ws = request.environ['wsgi.websocket']
+        while True:
+            token = ws.receive()
+            print token
+            if token in logged_in_users:
+                email = logged_in_users[token]
+                print email
+                websockets[email] = ws
+    return
+
 @app.route('/signin', methods=['POST'])
 def sign_in():
     email = request.form['email']
+    if email in websockets:
+        print "sending data to client"
+        ws = websockets[email]
+        ws.send(json.dumps({"action": "signout", "message": "You signed in from another browser"}))
+
     password = request.form['password']
     if dh.validate_password(email, password):
         letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
         token = ""
         for i in range(36):
           token += letters[randint(0, len(letters)-1)]
-          
+
         logged_in_users[token] = email
-        return json.dumps({"success": True, "message": "You are now signed in", "data": token})        
+        return json.dumps({"success": True, "message": "You are now signed in", "data": token})
     else:
         return json.dumps({"success": False, "message": "Invalid email or password"})
 
@@ -45,6 +68,11 @@ def sign_up():
 def sign_out():
     token = request.form['token']
     if token in logged_in_users:
+        email = logged_in_users[token]
+        ws = websockets[email]
+        #ws.close()
+        print "socket closed"
+        del websockets[email]
         del logged_in_users[token]
         return json.dumps({"success": True, "message": "Successfully signed out"})
     
@@ -122,13 +150,8 @@ def post_message():
     token = request.form['token']
     message = request.form['message']
     reciever_email = request.form['email']
-    print token
-    print message
-    print reciever_email
-    print "HEJEHEJ"
     if token in logged_in_users:
         sender_email = logged_in_users[token]
-        print sender_email
         if dh.validate_user(reciever_email):
             dh.add_message(reciever_email, sender_email, message)
             return json.dumps({"success": True, "message": "Message posted"})
@@ -136,7 +159,11 @@ def post_message():
             return json.dumps({"success": False, "message": "No such user"})
 
     return json.dumps({"success": False, "message": "You are not signed in"})
+
+
     
 if __name__ == "__main__":
-    dh.init_db()
+    http_server = WSGIServer(('', 8000), app, handler_class=WebSocketHandler)
+    http_server.serve_forever()
+    #dh.init_db()
     app.run()

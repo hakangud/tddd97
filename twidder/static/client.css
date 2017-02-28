@@ -196,13 +196,14 @@ div.topnav {
 
 div.wall {
     float: left;
-    max-width: 300px;
+    width: 300px;
     margin: 0;
 }
 
 div.userinfo {
-    margin-left: 330px;
-    overflow: hidden;
+    float: left;
+    margin-left: 20px;
+    width: 200px;
 }
 
 ul.topnav li a:hover {background-color: #555;}

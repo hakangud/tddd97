@@ -12,6 +12,35 @@ displayView = function () {
     attachHandlers();
 };
 
+//lägg in websocketkod
+// skicka token, om det finns en email for den, signa ut
+newSocket = function () {
+    console.log("setting up new socket");
+    console.log(document.domain);
+    var ws = new WebSocket("ws://" + document.domain + ":8000/api");
+    ws.onopen = function () {
+        console.log("ws opened");
+        ws.send(localStorage.getItem("token"));
+        console.log("token= " + localStorage.getItem("token"));
+    };
+
+    ws.onmessage = function (event) {
+        console.log(event.data);
+        var data = JSON.parse(event.data);
+        if (data.action == "signout") {
+            console.log(data.message);
+            signOut(data.message);
+            document.getElementById("errormessage").innerHTML = data.message;
+            document.getElementById("successmessage").innerHTML = "";
+            //ws.close();
+        }
+    };
+
+    ws.onclose = function () {
+        console.log("ws closed");
+    };
+};
+
 attachHandlers = function () {
     var welcome = document.getElementById("welcome");
     if (welcome != null) {
@@ -37,21 +66,7 @@ attachHandlers = function () {
         });
 
         document.getElementById("signoutbutton").onclick = function () {
-            var token = localStorage.getItem("token");
-            var params = "token="+token;
-            localStorage.removeItem("token");
-            localStorage.removeItem("my_email");
-            sendPOST('/signout', params, function () {
-                if (this.success) {
-                    document.getElementById("errormessage").innerHTML = "";
-                    document.getElementById("successmessage").innerHTML = this.message;
-                }
-                else {
-                    document.getElementById("errormessage").innerHTML = this.message;
-                    document.getElementById("successmessage").innerHTML = "";
-                }
-            });
-            displayView();
+            signOut();
         };
 
         document.getElementById("search").onclick = function () {
@@ -81,7 +96,7 @@ attachHandlers = function () {
 
         document.getElementById("browsereload").onclick = function () {
             var email = document.getElementById("bemail").textContent;
-            if (email != null) {
+            if (email != "" && email != null) {
                 getMessages(email);
             }
         };
@@ -104,6 +119,31 @@ attachHandlers = function () {
         };
         displayHome();
     }
+};
+
+signOut = function (msg) {
+    var token = localStorage.getItem("token");
+    var params = "token="+token;
+    localStorage.removeItem("token");
+    localStorage.removeItem("my_email");
+    sendPOST('/signout', params, function () {
+        if (msg != null) {
+            document.getElementById("errormessage").innerHTML = msg;
+            document.getElementById("successmessage").innerHTML = "";
+        }
+        else {
+            if (this.success) {
+                document.getElementById("errormessage").innerHTML = "";
+                document.getElementById("successmessage").innerHTML = this.message;
+            }
+            else {
+                document.getElementById("errormessage").innerHTML = this.message;
+                document.getElementById("successmessage").innerHTML = "";
+            }
+        }
+    });
+
+    displayView();
 };
 
 displayHome = function () {
@@ -281,6 +321,7 @@ submitLoginForm = function () {
                 var token = this.data;
                 localStorage.setItem("token", token);
                 localStorage.setItem("my_email", form.email.value);
+                newSocket();
 			    displayView();
                 displayHome();
             }
