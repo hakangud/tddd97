@@ -176,6 +176,13 @@ div.account {
     height: 260px;
 }
 
+div.stats {
+    display: none;
+    margin: auto;
+    width: 600px;
+    height: 600px;
+}
+
 div.accountbuttons {
     padding-top: 10px;
     float: left;
@@ -205,6 +212,27 @@ div.userinfo {
     margin-left: 20px;
     width: 200px;
 }
+
+div.messagestats {
+    height: 200px;
+    width: 400px;
+}
+
+div.genderstats {
+    height: 200px;
+    width: 200px;
+}
+
+.chart div {
+    font: 10px sans-serif;
+    background-color: steelblue;
+    text-align: right;
+    padding: 3px;
+    margin: 1px;
+    color: white;
+}
+
+
 
 ul.topnav li a:hover {background-color: #555;}
 

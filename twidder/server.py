@@ -22,18 +22,20 @@ def api():
         ws = request.environ['wsgi.websocket']
         while True:
             token = ws.receive()
-            print token
             if token in logged_in_users:
                 email = logged_in_users[token]
-                print email
                 websockets[email] = ws
+                update_gender_stats()
+                data = dh.get_user_messages(email)
+                ws.send(json.dumps({"action": "updatemessages", "message": "Messages stats updated", "data": data}))
+
     return
 
 @app.route('/signin', methods=['POST'])
 def sign_in():
     email = request.form['email']
     if email in websockets:
-        print "sending data to client"
+        print "signed in from different browser"
         ws = websockets[email]
         ws.send(json.dumps({"action": "signout", "message": "You signed in from another browser"}))
 
@@ -42,12 +44,43 @@ def sign_in():
         letters = "abcdefghiklmnopqrstuvwwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
         token = ""
         for i in range(36):
-          token += letters[randint(0, len(letters)-1)]
+            token += letters[randint(0, len(letters)-1)]
 
         logged_in_users[token] = email
         return json.dumps({"success": True, "message": "You are now signed in", "data": token})
     else:
         return json.dumps({"success": False, "message": "Invalid email or password"})
+
+def get_online_users():
+    male = 0
+    female = 0
+    for token in logged_in_users:
+        print "logged in users token= " + token
+        data = dh.get_user_data(logged_in_users[token])
+        if data[4] == "male":
+            male += 1
+        if data[4] == "female":
+            female += 1
+
+    return [male, female]
+
+def update_gender_stats():
+    num_users = get_online_users()
+    print num_users
+    #male = 0
+    #female = 0
+    #print "email= " + logged_in_users[token]
+    #for token in logged_in_users:
+      #  print "logged in users token= " + token
+     #   data = dh.get_user_data(logged_in_users[token])
+      #  if data[4] == "male":
+     #       male += 1
+     #   if data[4] == "female":
+     #       female += 1
+
+    for ws in websockets:
+        print "websocket= " + ws
+        websockets[ws].send(json.dumps({"action": "updategender", "message": "Updating gender stats", "data": num_users}))
 
 @app.route('/signup', methods=['POST'])
 def sign_up():
@@ -69,11 +102,10 @@ def sign_out():
     token = request.form['token']
     if token in logged_in_users:
         email = logged_in_users[token]
-        ws = websockets[email]
-        #ws.close()
-        print "socket closed"
+        #ws = websockets[email]
         del websockets[email]
         del logged_in_users[token]
+        update_gender_stats()
         return json.dumps({"success": True, "message": "Successfully signed out"})
     
     return json.dumps({"success": False, "message": "You are not signed in"})
@@ -150,10 +182,16 @@ def post_message():
     token = request.form['token']
     message = request.form['message']
     reciever_email = request.form['email']
+    day = request.form['day']
     if token in logged_in_users:
         sender_email = logged_in_users[token]
         if dh.validate_user(reciever_email):
-            dh.add_message(reciever_email, sender_email, message)
+            print "sending messageupdate with ws"
+            dh.add_message(reciever_email, sender_email, message, day)
+            if reciever_email in websockets:
+                ws = websockets[reciever_email]
+                data = dh.get_user_messages(reciever_email)
+                ws.send(json.dumps({"action": "updatemessages", "message": "Messages stats updated", "data": data}))
             return json.dumps({"success": True, "message": "Message posted"})
         else:
             return json.dumps({"success": False, "message": "No such user"})
@@ -163,7 +201,8 @@ def post_message():
 
     
 if __name__ == "__main__":
+    #dh.init_db()
     http_server = WSGIServer(('', 8000), app, handler_class=WebSocketHandler)
     http_server.serve_forever()
-    #dh.init_db()
+
     app.run()

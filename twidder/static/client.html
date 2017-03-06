@@ -6,6 +6,8 @@
      <link href="../static/client.css" type="text/css" rel="stylesheet">
      <script src="../static/client.js" type="text/javascript"></script>
      <script src="../static/serverstub.js" type="text/javascript"></script>
+     <script src="https://d3js.org/d3.v4.min.js"></script>
+     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.bundle.js"></script>
      <script type="text/view" id="profileview">
      <div id="profile" class="topnav">
 
@@ -13,6 +15,7 @@
         <li><a href="#home" id="homebutton">Home</a></li>
         <li><a href="#browse" id="browsebutton">Browse</a></li>
         <li><a href="#account" id="accountbutton">Account</a></li>
+        <li><a href="#account" id="statsbutton">Stats</a></li>
     </ul>
      </div>
 	 <div id="home" class="home">
@@ -61,6 +64,16 @@
          </form>
          <button id="signoutbutton" class="account">Sign out</button>
 	 </div>
+
+	 <div id="stats" class="stats">
+	    <div class="messagestats">
+	    <canvas id="messagechart" class="messagechart"></canvas>
+	    </div>
+	    <div class="genderstats">
+	    <canvas id="genderpie" class="genderpie"></canvas>
+	    </div>
+	 </div>
+
 	<p id="errormessage" class="error"></p>
 	<p id="successmessage" class="success"></p>
      </script>

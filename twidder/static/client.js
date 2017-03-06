@@ -12,11 +12,32 @@ displayView = function () {
     attachHandlers();
 };
 
+submitLoginForm = function () {
+	var form = document.getElementById("login");
+	if (validatePasswordLength(form)) {
+        var params = "email="+form.email.value+"&"+
+                "password="+form.pword.value;
+        sendPOST('/signin', params, function () {
+            if (this.success) {
+                var token = this.data;
+                localStorage.setItem("token", token);
+                localStorage.setItem("my_email", form.email.value);
+			    displayView();
+                displayHome();
+                newSocket();
+            }
+            else {
+                document.getElementById("errormessage").innerHTML = this.message;
+            }
+        });
+	}
+
+};
+
 //lägg in websocketkod
 // skicka token, om det finns en email for den, signa ut
 newSocket = function () {
     console.log("setting up new socket");
-    console.log(document.domain);
     var ws = new WebSocket("ws://" + document.domain + ":8000/api");
     ws.onopen = function () {
         console.log("ws opened");
@@ -33,6 +54,22 @@ newSocket = function () {
             document.getElementById("errormessage").innerHTML = data.message;
             document.getElementById("successmessage").innerHTML = "";
             //ws.close();
+        }
+
+        // if a message is posted, updates message chart
+        if (data.action == "updatemessages") {
+            console.log("updating messages");
+            var messages = [0,0,0,0,0,0,0];
+            for (i in data.data) {
+                messages[data.data[i][4]-1] += 1;
+            }
+            updateMessageStats(messages);
+        }
+
+        // when a user signs out or in, updates male/female chart
+        if (data.action == "updategender") {
+            console.log("updategender msg recieved via socket")
+            updateGenderPie(data.data);
         }
     };
 
@@ -86,12 +123,18 @@ attachHandlers = function () {
 
         document.getElementById("accountbutton").onclick = function () {
             clearErrorMessages();
+            document.getElementById("statsbutton").style.background = "#f2f2f2";
             document.getElementById("accountbutton").style.background = "#555";
             document.getElementById("homebutton").style.background = "#f2f2f2";
             document.getElementById("browsebutton").style.background = "#f2f2f2";
             document.getElementById("account").style.display = "block";
             document.getElementById("home").style.display = "none";
             document.getElementById("browse").style.display = "none";
+            document.getElementById("stats").style.display = "none";
+        };
+
+        document.getElementById("statsbutton").onclick = function () {
+            displayStats();
         };
 
         document.getElementById("browsereload").onclick = function () {
@@ -153,9 +196,11 @@ displayHome = function () {
     document.getElementById("account").style.display = "none";
     document.getElementById("home").style.display = "block";
     document.getElementById("browse").style.display = "none";
+    document.getElementById("stats").style.display = "none";
     document.getElementById("homebutton").style.background = "#555";
     document.getElementById("accountbutton").style.background = "#f2f2f2";
     document.getElementById("browsebutton").style.background = "#f2f2f2";
+    document.getElementById("statsbutton").style.background = "#f2f2f2";
 };
 
 displayBrowse = function () {
@@ -163,19 +208,74 @@ displayBrowse = function () {
     document.getElementById("browsebutton").style.background = "#555";
     document.getElementById("accountbutton").style.background = "#f2f2f2";
     document.getElementById("homebutton").style.background = "#f2f2f2";
+    document.getElementById("statsbutton").style.background = "#f2f2f2";
     document.getElementById("account").style.display = "none";
     document.getElementById("home").style.display = "none";
     document.getElementById("browse").style.display = "block";
+    document.getElementById("stats").style.display = "none";
     if (document.getElementById("bemail").textContent) {
         var email = document.getElementById("bemail").textContent;
         getMessages(email);
     }
 };
 
+// loads all the stats at startup
+loadStats = function () {
+
+};
+
+updateGenderPie = function (data) {
+    console.log("updating gender pie");
+
+    var genderCanvas = document.getElementById("genderpie");
+    var genderPie = new Chart(genderCanvas, {
+        type: 'pie',
+        data: {
+            labels: ["male", "female"],
+            datasets: [{
+                label: 'users online',
+                data: data
+            }]
+        }
+    });
+};
+
+updateMessageStats = function (data) {
+    console.log("updating message stats");
+    var messageCanvas = document.getElementById("messagechart");
+    var messageChart = new Chart(messageCanvas, {
+        type: 'bar',
+        data: {
+            labels: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+            datasets: [{
+                label: 'messages posted on my wall',
+                data: data
+            }]
+        }
+    });
+};
+
+// show number of signed in users,
+// messages posted on my wall,
+// number of views of my page
+displayStats = function () {
+    clearErrorMessages();
+    document.getElementById("browsebutton").style.background = "#f2f2f2";
+    document.getElementById("accountbutton").style.background = "#f2f2f2";
+    document.getElementById("homebutton").style.background = "#f2f2f2";
+    document.getElementById("statsbutton").style.background = "#555";
+    document.getElementById("account").style.display = "none";
+    document.getElementById("home").style.display = "none";
+    document.getElementById("browse").style.display = "none";
+    document.getElementById("stats").style.display = "block";
+
+};
+
 postOnWall = function (email, messagebox) {
     var message = document.getElementById(messagebox).value;
     var token = localStorage.getItem("token");
     var postEmail;
+    var day = new Date().getDay();
     if (email == null) {
         postEmail = localStorage.getItem("my_email");
     }
@@ -183,7 +283,7 @@ postOnWall = function (email, messagebox) {
         postEmail = email;
     }
 
-    var params = "token="+token+"&"+"message="+message+"&"+"email="+postEmail;
+    var params = "token="+token+"&"+"message="+message+"&"+"email="+postEmail+"&"+"day="+day;
     sendPOST('/postmessage', params, function () {
         if (this.success) {
             document.getElementById("errormessage").innerHTML = "";
@@ -308,28 +408,6 @@ changePassword = function (form) {
 		    }
         });
     }
-};
-
-submitLoginForm = function () {
-	var form = document.getElementById("login");
-	if (validatePasswordLength(form)) {
-        var params = "email="+form.email.value+"&"+
-                "password="+form.pword.value;
-
-        sendPOST('/signin', params, function () {
-            if (this.success) {
-                var token = this.data;
-                localStorage.setItem("token", token);
-                localStorage.setItem("my_email", form.email.value);
-                newSocket();
-			    displayView();
-                displayHome();
-            }
-            else {
-                document.getElementById("errormessage").innerHTML = this.message;
-            }
-        });
-	}
 };
 
 submitSignUpForm = function () {

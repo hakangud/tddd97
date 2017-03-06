@@ -14,5 +14,6 @@ create table messages (
   message_id integer primary key autoincrement,
   recieveremail text not null,
   senderemail text not null,
-  content text not null
+  content text not null,
+  day integer not null
 );

@@ -60,7 +60,7 @@ def update_password(email, new_password):
     c.execute("UPDATE users SET password = ? WHERE email = ?", (new_password, email))
     c.commit()
 
-def add_message(reciever_email, sender_email, message):
+def add_message(reciever_email, sender_email, message, day):
     c = get_db()
-    c.execute("INSERT INTO messages (recieveremail, senderemail, content) VALUES (?, ?, ?)", (reciever_email, sender_email, message))
+    c.execute("INSERT INTO messages (recieveremail, senderemail, content, day) VALUES (?, ?, ?, ?)", (reciever_email, sender_email, message, day))
     c.commit()
