@@ -224,8 +224,8 @@ div.genderstats {
 }
 
 div.searchstats {
-    float: left;
-    margin-left: 330px;
+    height: 200px;
+    width: 200px;
 }
 
 .chart div {

@@ -224,11 +224,6 @@ displayBrowse = function () {
     }
 };
 
-// loads all the stats at startup
-loadStats = function () {
-
-};
-
 updateGenderPie = function (data) {
     console.log("updating gender pie");
 
@@ -260,8 +255,19 @@ updateMessageStats = function (data) {
     });
 };
 
-updateProfileViewStats = function (value) {
-    document.getElementById("searchstats").innerHTML = value;
+updateProfileViewStats = function (data) {
+    console.log("updating gender pie");
+
+    var profileCanvas = document.getElementById("profilepie");
+    var profilePie = new Chart(profileCanvas, {
+        type: 'pie',
+        data: {
+            labels: ["profile views", "profiles viwed"],
+            datasets: [{
+                data: data
+            }]
+        }
+    });
 }
 
 // show number of signed in users,
@@ -314,7 +320,7 @@ clearErrorMessages = function () {
 searchForUser = function (email) {
     var token = localStorage.getItem("token");
     if (email != null) {
-        sendPOST('/usersearchedfor', "email="+email, null);
+        sendPOST('/usersearchedfor', "email="+email+"&my_email="+localStorage.getItem("my_email"), null);
         sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
             if (this.success) {
                 document.getElementById("errormessage").innerHTML = "";

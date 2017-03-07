@@ -25,12 +25,16 @@ def api():
             if token in logged_in_users:
                 email = logged_in_users[token]
                 websockets[email] = ws
-                update_gender_stats()
-                update_search_value(email)
-                data = dh.get_user_messages(email)
-                ws.send(json.dumps({"action": "updatemessages", "message": "Messages stats updated", "data": data}))
+                init_stats(email)
 
     return
+
+def init_stats(email):
+    ws = websockets[email]
+    update_gender_stats()
+    update_search_value(email)
+    data = dh.get_user_messages(email)
+    ws.send(json.dumps({"action": "updatemessages", "message": "Messages stats updated", "data": data}))
 
 @app.route('/signin', methods=['POST'])
 def sign_in():
@@ -129,16 +133,24 @@ def change_password():
 @app.route('/usersearchedfor', methods=['POST'])
 def user_searched_for():
     email = request.form['email']
-    dh.increase_search_value(email)
-    update_search_value(email)
+    user_email = request.form['my_email']
+    dh.increase_search_value(user_email)
+    dh.increase_searches_for_value(email)
+    update_search_value(user_email, email)
     return ""
 
-def update_search_value(email):
-    if email in websockets:
-        value = dh.get_search_value(email)
-        print value
-        ws = websockets[email]
-        ws.send(json.dumps({"action": "updatesearchvalue", "message": "Updating search value", "data": value}))
+def update_search_value(user_email, email=None):
+    if email is not None and email in websockets:
+        search_for_value1 = dh.get_searched_for_value(email)
+        search_value1 = dh.get_search_value(email)
+        ws1 = websockets[email]
+        ws1.send(json.dumps({"action": "updatesearchvalue", "message": "Updating search value", "data": [search_for_value1, search_value1]}))
+
+    search_for_value2 = dh.get_searched_for_value(user_email)
+    search_value2 = dh.get_search_value(user_email)
+    ws2 = websockets[user_email]
+    ws2.send(json.dumps({"action": "updatesearchvalue", "message": "Updating search value", "data": [search_for_value2, search_value2]}))
+
 
 @app.route('/getuserdatabytoken/<token>', methods=['GET'])
 def get_user_data_by_token(token):

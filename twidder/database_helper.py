@@ -52,7 +52,7 @@ def get_user_messages(email):
 
 def add_user(email, password, firstname, familyname, gender, city, country):
     c = get_db()
-    c.execute("INSERT INTO users (email, password, firstname, familyname, gender, city, country, searches) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (email, password, firstname, familyname, gender, city, country, 0))
+    c.execute("INSERT INTO users (email, password, firstname, familyname, gender, city, country, searches, searches_for) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (email, password, firstname, familyname, gender, city, country, 0, 0))
     c.commit()
 
 def update_password(email, new_password):
@@ -70,7 +70,17 @@ def increase_search_value(email):
     c.execute("UPDATE users SET searches = searches + 1 WHERE email = ?", (email,))
     c.commit()
 
+def increase_searches_for_value(email):
+    c = get_db()
+    c.execute("UPDATE users SET searches_for = searches_for + 1 WHERE email = ?", (email,))
+    c.commit()
+
 def get_search_value(email):
     c = get_db()
     res = c.execute("SELECT searches FROM users WHERE email = ?", (email,))
+    return res.fetchone()
+
+def get_searched_for_value(email):
+    c = get_db()
+    res = c.execute("SELECT searches_for FROM users WHERE email = ?", (email,))
     return res.fetchone()
