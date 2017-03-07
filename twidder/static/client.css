@@ -223,6 +223,11 @@ div.genderstats {
     width: 200px;
 }
 
+div.searchstats {
+    float: left;
+    margin-left: 330px;
+}
+
 .chart div {
     font: 10px sans-serif;
     background-color: steelblue;

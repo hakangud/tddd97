@@ -26,6 +26,7 @@ def api():
                 email = logged_in_users[token]
                 websockets[email] = ws
                 update_gender_stats()
+                update_search_value(email)
                 data = dh.get_user_messages(email)
                 ws.send(json.dumps({"action": "updatemessages", "message": "Messages stats updated", "data": data}))
 
@@ -124,6 +125,20 @@ def change_password():
             return json.dumps({"success": False, "message": "Wrong password"})
 
     return json.dumps({"success": False, "message": "You are not signed in"})
+
+@app.route('/usersearchedfor', methods=['POST'])
+def user_searched_for():
+    email = request.form['email']
+    dh.increase_search_value(email)
+    update_search_value(email)
+    return ""
+
+def update_search_value(email):
+    if email in websockets:
+        value = dh.get_search_value(email)
+        print value
+        ws = websockets[email]
+        ws.send(json.dumps({"action": "updatesearchvalue", "message": "Updating search value", "data": value}))
 
 @app.route('/getuserdatabytoken/<token>', methods=['GET'])
 def get_user_data_by_token(token):

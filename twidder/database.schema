@@ -6,7 +6,8 @@ create table users (
   familyname text not null,
   gender text not null,
   city text not null,
-  country text not null
+  country text not null,
+  searches integer not null
 );
 
 drop table if exists messages;

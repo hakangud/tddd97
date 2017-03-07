@@ -71,6 +71,11 @@ newSocket = function () {
             console.log("updategender msg recieved via socket")
             updateGenderPie(data.data);
         }
+
+        if (data.action == "updatesearchvalue") {
+            console.log("updatesearchvalue msg recieved via socket")
+            updateProfileViewStats(data.data)
+        }
     };
 
     ws.onclose = function () {
@@ -255,6 +260,10 @@ updateMessageStats = function (data) {
     });
 };
 
+updateProfileViewStats = function (value) {
+    document.getElementById("searchstats").innerHTML = value;
+}
+
 // show number of signed in users,
 // messages posted on my wall,
 // number of views of my page
@@ -305,6 +314,7 @@ clearErrorMessages = function () {
 searchForUser = function (email) {
     var token = localStorage.getItem("token");
     if (email != null) {
+        sendPOST('/usersearchedfor', "email="+email, null);
         sendGET('/getuserdatabyemail/'+token+'/'+email, function () {
             if (this.success) {
                 document.getElementById("errormessage").innerHTML = "";
